@@ -1,6 +1,7 @@
 import logging
 
 import tensorflow as tf
+from matplotlib import pyplot as plt
 
 HISTORY_LENGTH = 30
 
@@ -80,7 +81,7 @@ def build_model():
 def main() -> None:
     batch_size = 32
     epochs = 100
-    patience = 5
+    patience = 10
     train_input_file = (
         "gs://pipelines-hackathon/preprocessed_data/yahoo_stock.train.tfrecord"
     )
@@ -93,7 +94,7 @@ def main() -> None:
     train_ds = load_dataset(train_input_file, batch_size=batch_size, shuffle=True)
     val_ds = load_dataset(val_input_file)
     model = build_model()
-    model.fit(
+    history = model.fit(
         train_ds,
         validation_data=val_ds,
         epochs=epochs,
@@ -106,6 +107,10 @@ def main() -> None:
             ),
         ],
     )
+    plt.plot(history.history["loss"], label="loss")
+    plt.plot(history.history["val_loss"], label="val_loss")
+    plt.legend()
+    plt.savefig("train.png")
 
     test_ds = load_dataset(test_input_file)
     test_loss = model.evaluate(test_ds)
@@ -114,4 +119,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger("matplotlib").setLevel(logging.INFO)
     main()
