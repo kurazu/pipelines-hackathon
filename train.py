@@ -1,7 +1,12 @@
 import logging
 
+import gcsfs
 import tensorflow as tf
 from matplotlib import pyplot as plt
+
+logger = logging.getLogger(__name__)
+
+fs = gcsfs.GCSFileSystem(project="pipelines-hackathon")
 
 HISTORY_LENGTH = 30
 
@@ -91,9 +96,12 @@ def main() -> None:
     test_input_file = (
         "gs://pipelines-hackathon/preprocessed_data/yahoo_stock.test.tfrecord"
     )
+    model_path = "gs://pipelines-hackathon/models/simple"
+    logger.info("Building model")
+    model = build_model()
+    logger.info("Training model")
     train_ds = load_dataset(train_input_file, batch_size=batch_size, shuffle=True)
     val_ds = load_dataset(val_input_file)
-    model = build_model()
     history = model.fit(
         train_ds,
         validation_data=val_ds,
@@ -107,14 +115,28 @@ def main() -> None:
             ),
         ],
     )
+    logger.info("Saving model")
+    model.save(model_path)
+
+    logger.info("Plotting learning curves")
     plt.plot(history.history["loss"], label="loss")
     plt.plot(history.history["val_loss"], label="val_loss")
     plt.legend()
-    plt.savefig("train.png")
+    with fs.open("gs://pipelines-hackathon/models/simple_train.png", "wb") as f:
+        plt.savefig(f, format="png")
 
+    logger.info("Restoring model")
+    model = tf.keras.models.load_model(model_path)
+    logger.info("Evaluating model")
     test_ds = load_dataset(test_input_file)
     test_loss = model.evaluate(test_ds)
-    print("test loss", test_loss)
+    logger.info("Test loss %.4f", test_loss)
+    logger.info("Storing test loss")
+    with fs.open(
+        "gs://pipelines-hackathon/models/simple_train.txt", "w", encoding="utf-8"
+    ) as f:
+        f.write(f"Test loss: {test_loss}")
+    logger.info("Done")
 
 
 if __name__ == "__main__":
