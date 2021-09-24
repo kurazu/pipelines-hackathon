@@ -51,25 +51,28 @@ def build_model():
     stacked_past_features = tf.stack(
         [past_high, past_low, past_open, past_close, past_volume, past_adj_close],
         axis=-1,
+        name="stacked_past_features",
     )
-    past = tf.keras.layers.LSTM(32, return_sequences=True)(stacked_past_features)
-    past = tf.keras.layers.LSTM(16)(past)
+    past = tf.keras.layers.LSTM(32, return_sequences=True, name="past_1")(
+        stacked_past_features
+    )
+    past = tf.keras.layers.LSTM(16, name="past_2")(past)
 
-    current = tf.keras.layers.Dense(16, activation="relu")(current_open)
+    current = tf.keras.layers.Dense(16, activation="relu", name="current")(current_open)
 
-    joined = tf.keras.layers.Concatenate()([past, current])
-    output = tf.keras.layers.Dense(1)(joined)
+    joined = tf.keras.layers.Concatenate(name="concat")([past, current])
+    output = tf.keras.layers.Dense(1, name="net_output")(joined)
 
     model = tf.keras.Model(
-        inputs=[
-            past_high,
-            past_low,
-            past_open,
-            past_close,
-            past_volume,
-            past_adj_close,
-            current_open,
-        ],
+        inputs={
+            "past_high": past_high,
+            "past_low": past_low,
+            "past_open": past_open,
+            "past_close": past_close,
+            "past_volume": past_volume,
+            "past_adj_close": past_adj_close,
+            "open": current_open,
+        },
         outputs=output,
     )
     model.compile(optimizer="adam", loss="mse")
