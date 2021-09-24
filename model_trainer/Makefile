@@ -1,13 +1,13 @@
 IMAGE_NAME=pipelines-hackathon-trainer
 
-build:
+build: sdist
 	docker build -t "${IMAGE_NAME}" .
 
 run: build
 	docker run \
 		-it --rm \
 		--name "${IMAGE_NAME}_run" \
-		--volume "$(shell pwd)/creds:/creds:ro" \
+		--volume "$(shell pwd)/../creds:/creds:ro" \
 		--env GOOGLE_APPLICATION_CREDENTIALS="/creds/pipelines-hackathon-fa8dc6aa5fef.json" \
 		--env AIP_MODEL_DIR="gs://pipelines-hackathon/models/simple-local/artifacts" \
 		--env AIP_CHECKPOINT_DIR="gs://pipelines-hackathon/models/simple-local/checkpoints" \

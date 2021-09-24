@@ -172,6 +172,7 @@ if __name__ == "__main__":
     logging.basicConfig(
         level=logging.DEBUG,
         format="[%(asctime)s][%(levelname)-7s][%(name)s] %(message)s",
+        force=True,
     )
     # Make matplotlib shut up about fonts
     logging.getLogger("matplotlib").setLevel(logging.INFO)
