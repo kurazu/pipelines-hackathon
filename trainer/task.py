@@ -119,8 +119,11 @@ def main(
     history_length: int,
 ) -> None:
     model_artifact_dir = os.environ["AIP_MODEL_DIR"]
+    logger.debug("Artifact dir %r", model_artifact_dir)
     checkpoint_dir = os.environ["AIP_CHECKPOINT_DIR"]
+    logger.debug("Checkpoint dir %r", checkpoint_dir)
     tensorboard_log_dir = os.environ["AIP_TENSORBOARD_LOG_DIR"]
+    logger.debug("TensorBoard dir %r", tensorboard_log_dir)
 
     logger.info("Building model")
     model = build_model(history_length=history_length)
@@ -155,7 +158,13 @@ def main(
     test_ds = load_dataset(test_input_file, history_length=history_length)
     test_loss = model.evaluate(test_ds)
     logger.info("Test loss %.4f", test_loss)
-    tf.summary.scalar("test_loss", data=test_loss, step=epochs)
+
+    test_summary_writer = tf.summary.create_file_writer(
+        tensorboard_log_dir + "/custom_summary"
+    )
+    with test_summary_writer.as_default():
+        tf.summary.scalar("test_loss", test_loss, step=0)
+
     logger.info("Done")
 
 
