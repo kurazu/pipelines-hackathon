@@ -20,6 +20,7 @@ scipy = "^1.7.1"
 fsspec = "^2021.8.1"
 gcsfs = "^2021.8.1"
 tensorboard = "^2.6.0"
+tensorflow-addons = "^0.14.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"
