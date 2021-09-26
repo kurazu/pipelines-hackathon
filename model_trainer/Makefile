@@ -18,4 +18,4 @@ sdist:
 	python setup.py sdist --formats=gztar
 
 upload_trainer: sdist
-	gsutil cp dist/trainer-0.1.tar.gz gs://pipelines-hackathon/trainer/trainer-0.1.tar.gz
+	gsutil cp dist/trainer-0.2.tar.gz gs://pipelines-hackathon/trainer/trainer-0.2.tar.gz
